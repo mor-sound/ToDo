@@ -1,0 +1,146 @@
+NAME: Todon
+LAST DEPLOYED: Sat Feb  8 16:19:45 2020
+NAMESPACE: default
+STATUS: pending-install
+REVISION: 1
+USER-SUPPLIED VALUES:
+{}
+
+COMPUTED VALUES:
+affinity: {}
+fullnameOverride: ""
+image:
+  repository: avielb/todo:latest
+imagePullSecrets: []
+ingress:
+  annotations: {}
+  enabled: false
+  hosts:
+  - host: chart-example.local
+    paths: []
+  tls: []
+nameOverride: ""
+nodeSelector: {}
+podSecurityContext: {}
+replicaCount: 1
+resources: {}
+securityContext: {}
+service:
+  port: 80
+  type: ClusterIP
+serviceAccount:
+  annotations: {}
+  create: true
+  name: null
+tolerations: []
+
+HOOKS:
+---
+# Source: Todo/templates/tests/test-connection.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "Todon-test-connection"
+  labels:
+    helm.sh/chart: Todo-0.1.0
+    app.kubernetes.io/name: Todo
+    app.kubernetes.io/instance: Todon
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    "helm.sh/hook": test-success
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['Todon:80']
+  restartPolicy: Never
+MANIFEST:
+---
+# Source: Todo/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: Todon
+  labels:
+    helm.sh/chart: Todo-0.1.0
+    app.kubernetes.io/name: Todo
+    app.kubernetes.io/instance: Todon
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+---
+# Source: Todo/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: Todon
+  labels:
+    helm.sh/chart: Todo-0.1.0
+    app.kubernetes.io/name: Todo
+    app.kubernetes.io/instance: Todon
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - nodePort: 8080
+      port: 80
+      protocol: TCP
+      targetPort: 80ttp
+  selector:
+    app.kubernetes.io/name: Todo
+    app.kubernetes.io/instance: Todon
+---
+# Source: Todo/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: Todon
+  labels:
+    helm.sh/chart: Todo-0.1.0
+    app.kubernetes.io/name: Todo
+    app.kubernetes.io/instance: Todon
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: Todo
+      app.kubernetes.io/instance: Todon
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: Todo
+        app.kubernetes.io/instance: Todon
+    spec:
+      serviceAccountName: Todon
+      securityContext:
+        {}
+      containers:
+        - name: Todo
+          securityContext:
+            {}
+          image: "avielb/todo:latest:1.16.0"
+          imagePullPolicy: 
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            {}
+
+NOTES:
+1. Get the application URL by running these commands:
+  export POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=Todo,app.kubernetes.io/instance=Todon" -o jsonpath="{.items[0].metadata.name}")
+  echo "Visit http://127.0.0.1:8080 to use your application"
+  kubectl --namespace default port-forward $POD_NAME 8080:80

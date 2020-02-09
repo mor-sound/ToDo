@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "Todo.fullname" . }}
+  labels:
+    {{- include "Todo.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - nodePort: 8080
+      port: 80
+      protocol: TCP
+      targetPort: 80ttp
+  selector:
+    {{- include "Todo.selectorLabels" . | nindent 4 }}

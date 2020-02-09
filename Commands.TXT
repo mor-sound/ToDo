@@ -1,0 +1,4 @@
+helm create Todo
+helm install Todon .\Todo --dry-run --debug
+helm package .\Todo
+helm push Todo-0.1.0.tgz chartmuseum
